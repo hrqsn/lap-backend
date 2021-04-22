@@ -8,17 +8,20 @@ const subscription = async (req, res) => {
   const uid = nanoid()
 
   try {
-    const count = await prisma.count.create({
+    prisma.count.create({
       data: {
         uid: uid,
         count: 0
       }
+    }).then(count => {
+      if (count) {
+        res.json({
+          success: true,
+          uid: uid
+        })
+      }
     }).catch(error => {
       res.status(StatusCodes.INTERNAL_SERVER_ERROR).end(error.message)
-    })
-    res.json({
-      success: true,
-      uid: uid
     })
   } catch (error) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
@@ -32,16 +35,17 @@ const getCount = async (req, res) => {
   const uid = req.params.uid
 
   try {
-    const count = await prisma.count.findUnique({
+    prisma.count.findUnique({
       where: {
         uid: uid
       }
+    }).then(count => {
+      res.json({
+        success: true,
+        count: count.count
+      })
     }).catch(error => {
       res.status(StatusCodes.INTERNAL_SERVER_ERROR).end(error.message)
-    })
-    res.json({
-      success: true,
-      count: count.count
     })
   } catch (error) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
@@ -65,10 +69,12 @@ const updateCount = async (req, res) => {
         }
       }
     }).then(count => {
-      res.json({
-        success: true,
-        count: count.count
-      })
+      if (count) {
+        res.json({
+          success: true,
+          count: count.count
+        })
+      }
     }).catch(error => {
       res.status(StatusCodes.INTERNAL_SERVER_ERROR).end(error.message)
     })
